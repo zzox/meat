@@ -7,9 +7,10 @@ import kha.Scheduler;
 import kha.System;
 import kha.graphics2.Graphics;
 
-// don't know about this
 interface IDestroyable {
     public var destroyed:Bool;
+    public var x:Float;
+    public var y:Float;
 }
 
 interface IUpdateable extends IDestroyable {
@@ -19,7 +20,7 @@ interface IUpdateable extends IDestroyable {
 
 interface IRenderable extends IDestroyable {
     public var visible:Bool;
-    public function render (g2:Graphics):Void;
+    public function render (g2:Graphics, cam:Camera):Void;
 }
 
 class IntVec2 {
@@ -41,12 +42,14 @@ class IntVec2 {
     }
 }
 
-interface ISprite extends IUpdateable extends IRenderable {
-    var x:Float;
-    var y:Float;
+// is this necessary?
+interface GameObject extends IUpdateable extends IRenderable {
+    public var sizeX:Int;
+    public var sizeY:Int;
 }
 
-class Sprite implements ISprite {
+// a selection of an image. not rotatable or scalable (presently)
+class Sprite implements GameObject {
     public var destroyed:Bool = false;
 
     public var active:Bool = true;
@@ -56,7 +59,9 @@ class Sprite implements ISprite {
     public var y:Float;
     public var sizeX:Int;
     public var sizeY:Int;
-    public var tileIndex:Int;
+    public var tileIndex:Int = 0;
+    var flipX:Bool = false;
+    var flipY:Bool = false;
 
     public var image:Image;
 
@@ -69,40 +74,109 @@ class Sprite implements ISprite {
     }
 
     public function update (delta:Float) {}
-    public function render (g2:Graphics) {}
+
+    public function render (g2:Graphics, camera:Camera) {
+        // TODO: null check image? we need one, correct?
+        // load placeholder? use asset filter in the beginning?
+
+        // g2.color = Math.floor(alpha * 256) * 0x1000000 + color;
+
+        // rotate, translate, then scale
+        // g2.pushRotation(toRadians(angle), getMidpoint().x, getMidpoint().y);
+        // g2.pushTranslation(-camera.scroll.x * scrollFactor.x, -camera.scroll.y * scrollFactor.y);
+        // g2.pushScale(camera.scale.x, camera.scale.y);
+
+        // draw a cutout of the spritesheet based on the tileindex
+        final cols = Std.int(image.width / sizeX);
+        // TODO: clamp all to int besides camera position
+        // g2.drawScaledSubImage(
+        //     image,
+        //     (tileIndex % cols) * size.x,
+        //     Math.floor(tileIndex / cols) * size.y,
+        //     size.x,
+        //     size.y,
+        //     x + ((size.x - size.x * scale.x) / 2) + (flipX ? size.x * scale.x : 0),
+        //     y + ((size.y - size.y * scale.y) / 2) + (flipY ? size.y * scale.y : 0),
+        //     size.x * scale.x * (flipX ? -1 : 1),
+        //     size.y * scale.y * (flipY ? -1 : 1)
+        // );
+        g2.drawSubImage(
+            image,
+            x + (flipX ? sizeX : 0),
+            y + (flipY ? sizeY : 0),
+            (tileIndex % cols) * sizeX,
+            Math.floor(tileIndex / cols) * sizeY,
+            sizeX,
+            sizeY
+        );
+
+        // g2.popTransformation();
+        // g2.popTransformation();
+        // g2.popTransformation();
+    }
 }
 
 class SprItem extends Sprite {
-    override function render (g2:Graphics) {
+    override function render (g2:Graphics, cam:Camera) {
         g2.drawImage(image, x, y);
     }
 }
 
+class Camera {
+    public var bgColor:Int = 0xff000000;
+    public function new () {}
+}
+
 class Scene {
     // convenience helper, not always
-    public var sprites:Array<Sprite> = [];
+    public var entities:Array<GameObject> = [];
+
+    public var camera:Camera;
 
     public function new () {}
 
-    public function create () {}
-
-    public function update (time:Float) {
-        for (s in sprites) { s.update(time); }
+    public function create () {
+        camera = new Camera();
     }
 
-    public function render (g2:Graphics) {
-        for (s in sprites) s.render(g2);
+    public function update (time:Float) {
+        for (s in entities) { s.update(time); }
+    }
+
+    // called when drawing, passes in graphics instance
+    // overriding render will require you to call begin, clear and end
+    // public function render (graphics:Graphics, g4:kha.graphics4.Graphics, clears:Bool) {
+    public function render (graphics:Graphics, clears:Bool) {
+        graphics.begin(clears, camera.bgColor);
+
+        for (sprite in entities) {
+            sprite.render(graphics, camera);
+        }
+
+// #if debug_physics
+//         for (sprite in entities) {
+//             sprite.renderDebug(graphics, camera);
+//         }
+// #end
+        graphics.end();
     }
 }
 
 class TestScene extends Scene {
     override function create () {
+        super.create();
+
         trace('test');
 
         final spr = new SprItem(20, 20, Assets.images.cat);
 
-        sprites.push(spr);
+        entities.push(spr);
     }
+}
+
+enum ScaleMode {
+    Full;
+    PixelPerfect;
 }
 
 class Game {
@@ -111,60 +185,53 @@ class Game {
     // time since start, set by the scheduler
     var currentTime:Float;
 
-    var size:IntVec2;
+    // Size of the game.
+    public var width:Int;
+    public var height:Int;
 
+    // Size of the buffer.
+    public var bufferWidth:Int;
+    public var bufferHeight:Int;
+
+    // The backbuffer being drawn on to be scaled.  Not used in scaleMode `Fit`.
+    var backbuffer:Image;
+
+    // array of scenes to update and render
     var scenes:Array<Scene> = [];
 
-    public function new (name:String, width:Int, height:Int) {
-        size = IntVec2.make(width, height);
+    public function new (name:String, width:Int, height:Int, scaleMode:ScaleMode, ?bufferWidth:Int, ?bufferHeight:Int) {
+        // size = IntVec2.make(width, height)
+        this.width = width;
+        this.height = height;
 
         System.start({ title: name, width: width, height: height }, (_window) -> {
-            // bufferSize = initialSize != null ? initialSize : size;
-            // bufferSize = ;
-            // backbuffer = Image.createRenderTarget(width, height);
+            if (scaleMode == PixelPerfect) {
+                if (bufferWidth == null || bufferHeight == null) {
+                    throw 'Need buffer size';
+                }
 
-            // if (scaleMode != Full) {
-            //     backbuffer = Image.createRenderTarget(bufferSize.x, bufferSize.y);
-            //     backbuffer.g2.imageScaleQuality = Low;
-            // }
+                backbuffer = Image.createRenderTarget(bufferWidth, bufferHeight);
+                // backbuffer.g2.imageScaleQuality = Low;
+                this.bufferWidth = bufferWidth;
+                this.bufferHeight = bufferHeight;
+            } else {
+                bufferWidth = -1;
+                bufferHeight = -1;
+            }
 
             Scheduler.addTimeTask(update, 0, UPDATE_TIME);
 
-            // Scheduler.addTimeTask(
-            //     () -> {
-            //         update(); } catch (e) { exceptionHandler(e); }
-            //     },
-            //     0,
-            //     UPDATE_TIME
-            // );
-
-            System.notifyOnFrames((frames) -> { render(frames[0]); });
-
-            // if (scaleMode == Full) {
-            //     System.notifyOnFrames((frames) -> {
-            //         try { render(frames[0]); } catch (e) { exceptionHandler(e); }
-            //     });
-            // } else {
-            //     System.notifyOnFrames(
-            //         (frames) -> {
-            //             try { renderScaled(frames[0]); } catch (e) { exceptionHandler(e); }
-            //         }
-            //     );
-            // }
-
-            function allAssets (_:Dynamic) return true;
+            if (scaleMode == PixelPerfect) {
+                System.notifyOnFrames((frames) -> { renderPixelPerfect(frames[0]); });
+            } else {
+                System.notifyOnFrames((frames) -> { render(frames[0]); });
+            }
 
             Assets.loadEverything(() -> {
                 final scene = new TestScene();
                 scene.create();
                 scenes.push(scene);
             });
-
-            // function allAssets (_:Dynamic) return true;
-
-            // Assets.loadEverything(() -> {
-            //     switchScene(initalScene);
-            // }, null, compressedAudioFilter != null ? compressedAudioFilter : allAssets);
         });
     }
 
@@ -229,13 +296,30 @@ class Game {
     // }
 
     function render (framebuffer:Framebuffer) {
-        size.set(framebuffer.width, framebuffer.height);
+        setSize(framebuffer.width, framebuffer.height);
 
-        framebuffer.g2.begin(true);
         for (s in 0...scenes.length) {
-            scenes[s].render(framebuffer.g2/*, framebuffer.g4, s == 0*/);
+            scenes[s].render(framebuffer.g2, /* framebuffer.g4 */ s == 0);
         }
+    }
+
+    function renderPixelPerfect (framebuffer:Framebuffer) {
+        setSize(framebuffer.width, framebuffer.height);
+
+        for (s in 0...scenes.length) {
+            // scenes[s].render(backbuffer.g2, backbuffer.g4, s == 0);
+            scenes[s].render(backbuffer.g2, s == 0);
+        }
+
+        framebuffer.g2.begin(true, 0xff000000);
+            // framebuffer.g2.pipeline = fullScreenPipeline;
+            ScalerExp.scalePixelPerfect(backbuffer, framebuffer);
         framebuffer.g2.end();
+    }
+
+    inline function setSize (x:Int, y:Int) {
+        width = x;
+        height = y;
     }
 }
 
