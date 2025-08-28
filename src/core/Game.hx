@@ -13,10 +13,12 @@ interface IDestroyable {
 }
 
 interface IUpdateable extends IDestroyable {
+    public var active:Bool;
     public function update (time:Float):Void;
 }
 
 interface IRenderable extends IDestroyable {
+    public var visible:Bool;
     public function render (g2:Graphics):Void;
 }
 
@@ -46,22 +48,33 @@ interface ISprite extends IUpdateable extends IRenderable {
 
 class Sprite implements ISprite {
     public var destroyed:Bool = false;
+
+    public var active:Bool = true;
+    public var visible:Bool = true;
+
     public var x:Float;
     public var y:Float;
+    public var sizeX:Int;
+    public var sizeY:Int;
+    public var tileIndex:Int;
 
-    public function new (x:Float = 0.0, y:Float = 0.0) {
+    public var image:Image;
+
+    public function new (x:Float = 0.0, y:Float = 0.0, image:Image, ?sizeX:Int, ?sizeY:Int) {
         this.x = x;
         this.y = y;
+        this.sizeX = sizeX ?? image.height;
+        this.sizeY = sizeY ?? image.width;
+        this.image = image;
     }
-    
+
     public function update (delta:Float) {}
     public function render (g2:Graphics) {}
 }
 
 class SprItem extends Sprite {
     override function render (g2:Graphics) {
-        g2.color = 0xffff00ff;
-        g2.drawRect(x, y, 16, 16);
+        g2.drawImage(image, x, y);
     }
 }
 
@@ -86,7 +99,7 @@ class TestScene extends Scene {
     override function create () {
         trace('test');
 
-        final spr = new SprItem();
+        final spr = new SprItem(20, 20, Assets.images.cat);
 
         sprites.push(spr);
     }
@@ -157,10 +170,11 @@ class Game {
 
     function update () {
         final now = Scheduler.time();
+
 #if atomic
-        final delta = UPDATE_TIME;
-#else
         final delta = now - currentTime;
+#else
+        final delta = UPDATE_TIME;
 #end
 
         for (s in scenes) {
