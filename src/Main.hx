@@ -1,4 +1,5 @@
 import core.Game;
+
 // import core.Logs;
 // import core.Types;
 // import game.scenes.TestScene;
@@ -13,7 +14,7 @@ import kha.Macros;
 class Main {
 	public static function main() {
         setFullWindowCanvas();
-        new Game('quirk2', 1280, 720);
+        new Game('meat', 1280, 720);
 
         // new Game(
         //     new IntVec2(1300, 750),

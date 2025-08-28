@@ -7,20 +7,22 @@ import kha.Scheduler;
 import kha.System;
 import kha.graphics2.Graphics;
 
-class Updateable {
-    public function new () {}
+// don't know about this
+interface IDestroyable {
+    public var destroyed:Bool;
+}
 
-    public var destroyed:Bool = false;
+interface IUpdateable extends IDestroyable {
+    public function update (time:Float):Void;
+}
 
-    public function update (time:Float) {}
-
-    public function destroy () {
-        destroyed = true;
-    }
+interface IRenderable extends IDestroyable {
+    public function render (g2:Graphics):Void;
 }
 
 class IntVec2 {
     public static inline function make (x:Int, y:Int) {
+        // TODO: pooling
         return new IntVec2(x, y);
     }
 
@@ -37,28 +39,56 @@ class IntVec2 {
     }
 }
 
-class Renderable extends Updateable {
-    public function render () {
-        throw 'Need to implement';
+interface ISprite extends IUpdateable extends IRenderable {
+    var x:Float;
+    var y:Float;
+}
+
+class Sprite implements ISprite {
+    public var destroyed:Bool = false;
+    public var x:Float;
+    public var y:Float;
+
+    public function new (x:Float = 0.0, y:Float = 0.0) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    public function update (delta:Float) {}
+    public function render (g2:Graphics) {}
+}
+
+class SprItem extends Sprite {
+    override function render (g2:Graphics) {
+        g2.color = 0xffff00ff;
+        g2.drawRect(x, y, 16, 16);
     }
 }
 
-class Scene extends Updateable {
+class Scene {
     // convenience helper, not always
-    public var renderables:Array<Renderable> = [];
+    public var sprites:Array<Sprite> = [];
+
+    public function new () {}
 
     public function create () {}
 
-    override function update (time:Float) {
-        for (r in renderables) { r.update(time); }
+    public function update (time:Float) {
+        for (s in sprites) { s.update(time); }
     }
 
-    public function render (g2:Graphics) {}
+    public function render (g2:Graphics) {
+        for (s in sprites) s.render(g2);
+    }
 }
 
 class TestScene extends Scene {
     override function create () {
         trace('test');
+
+        final spr = new SprItem();
+
+        sprites.push(spr);
     }
 }
 
@@ -128,9 +158,9 @@ class Game {
     function update () {
         final now = Scheduler.time();
 #if atomic
-        final delta = now - currentTime;
-#else
         final delta = UPDATE_TIME;
+#else
+        final delta = now - currentTime;
 #end
 
         for (s in scenes) {
@@ -187,9 +217,11 @@ class Game {
     function render (framebuffer:Framebuffer) {
         size.set(framebuffer.width, framebuffer.height);
 
+        framebuffer.g2.begin(true);
         for (s in 0...scenes.length) {
             scenes[s].render(framebuffer.g2/*, framebuffer.g4, s == 0*/);
         }
+        framebuffer.g2.end();
     }
 }
 
