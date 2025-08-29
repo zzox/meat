@@ -1,4 +1,4 @@
-package core;
+package core.system;
 
 class Camera {
     public var bgColor:Int = 0xff000000;

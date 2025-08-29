@@ -1,11 +1,9 @@
-package core;
+package core.gameobjects;
 
-import core.Camera;
-import core.Types;
+import core.system.Camera;
 import kha.graphics2.Graphics;
 
-// is this necessary?
-class GameObject implements IUpdateable implements IRenderable {
+class GameObject {
     public var destroyed:Bool = false;
 
     public var active:Bool = true;
@@ -15,6 +13,8 @@ class GameObject implements IUpdateable implements IRenderable {
     public var y:Float;
     public var sizeX:Int;
     public var sizeY:Int;
+    public var scrollFactorX:Float = 1.0;
+    public var scrollFactorY:Float = 1.0;
 
     public function start () {
         active = true;

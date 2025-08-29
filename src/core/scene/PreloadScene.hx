@@ -1,6 +1,7 @@
-package core;
+package core.scene;
 
 import core.Types;
+import core.gameobjects.Sprite;
 import kha.Assets;
 import kha.Image;
 import kha.graphics2.Graphics;
@@ -22,8 +23,6 @@ class PreloadScene extends Scene {
 
     override function render (graphics:Graphics, clears:Bool) {
         super.render(graphics, clears);
-
-        trace('here');
 
         graphics.begin(false);
         graphics.color = 0xffa4aaac;

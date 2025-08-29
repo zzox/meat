@@ -1,5 +1,10 @@
 package core;
 
+import core.gameobjects.Sprite;
+import core.scene.PreloadScene;
+import core.scene.Scene;
+import core.system.Camera;
+import core.util.ScalerExp;
 import kha.Assets;
 import kha.Framebuffer;
 import kha.Image;
@@ -90,6 +95,7 @@ class Game {
                     changeScene(initialScene);
                 });
             }, (item) -> {
+                // TODO: add any other preload sprites
                 if (item.name == 'made_with_kha') return true;
                 return false;
             });
@@ -208,7 +214,6 @@ class Game {
         newScenes.push(scene);
         // scene.game = this;
         scene.camera = new Camera(bufferWidth > -1 ? bufferWidth : width, bufferHeight > -1 ? bufferHeight : height);
-        trace(scene.camera.height, scene.camera.width);
         scene.create();
     }
 

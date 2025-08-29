@@ -1,4 +1,4 @@
-package core;
+package core.util;
 
 import kha.Canvas;
 import kha.Color;

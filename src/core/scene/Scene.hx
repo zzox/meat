@@ -1,5 +1,8 @@
-package core;
+package core.scene;
 
+import core.gameobjects.GameObject;
+import core.gameobjects.Sprite;
+import core.system.Camera;
 import kha.Image;
 import kha.graphics2.Graphics;
 

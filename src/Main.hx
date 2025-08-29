@@ -17,7 +17,7 @@ class Main {
         new Game(
             'meat',
             1280, 720,
-            Full,
+            PixelPerfect,
             new TestScene(),
             320, 180
         );

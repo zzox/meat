@@ -2,22 +2,6 @@ package core;
 
 import kha.graphics2.Graphics;
 
-interface IDestroyable {
-    public var destroyed:Bool;
-    public var x:Float;
-    public var y:Float;
-}
-
-interface IUpdateable extends IDestroyable {
-    public var active:Bool;
-    public function update (time:Float):Void;
-}
-
-interface IRenderable extends IDestroyable {
-    public var visible:Bool;
-    public function render (g2:Graphics, cam:Camera):Void;
-}
-
 class IntVec2 {
     public static inline function make (x:Int, y:Int) {
         // TODO: pooling
