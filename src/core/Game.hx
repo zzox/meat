@@ -3,6 +3,7 @@ package core;
 import core.components.Family;
 import core.components.FrameAnim;
 import core.gameobjects.Sprite;
+import core.gameobjects.Tilemap;
 import core.scene.PreloadScene;
 import core.scene.Scene;
 import core.system.Camera;
@@ -29,8 +30,21 @@ class TestScene extends Scene {
 
         trace('test');
 
-        anim = makeAnim(1);
+        final arr = [];
+        for (i in 0...576) {
+            if (Math.random() < 0.05) {
+                arr.push(1);
+            } else if (Math.random() < 0.3) {
+                arr.push(0);
+            } else {
+                arr.push(2);
+            }
+        }
 
+        final tilemap = new Tilemap(2, 2, Assets.images.tiles, 24, 24, 16, 12, arr);
+        entities.push(tilemap);
+
+        anim = makeAnim(1);
         final spr = new Sprite(20, 20, Assets.images.actors, 32, 32);
         // spr.addComponent(animFam.getNext());
         spr.init(anim.getNext());
