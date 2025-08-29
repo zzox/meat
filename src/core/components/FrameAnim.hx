@@ -9,15 +9,13 @@ typedef AnimItem = {
     var repeats:Bool;
 }
 
-class FrameAnim {
+class FrameAnim extends Component {
     public var sprite:Sprite;
 
     var _animations:Map<String, AnimItem> = new Map();
 
     var animTime:Float;
     var currentAnim:AnimItem;
-
-    public function new () {}
 
     public function add (name:String, vals:Array<Int>, frameTime:Int, repeats:Bool = true) {
         _animations[name] = {
@@ -28,7 +26,20 @@ class FrameAnim {
         };
     }
 
-    public function update (delta:Float) {
+    // Play animation by name.  Won't restart same anim unless forced.
+    public function play (name:String, forceRestart:Bool = false) {
+        // isPaused = false;
+        // NOTE: `|| completed` isn't adequately tested
+        if (forceRestart /*|| completed*/ || currentAnim == null || name != currentAnim.name) {
+            animTime = 0;
+            currentAnim = _animations.get(name);
+            // completed = false;
+            // HACK: without this a previous anim may play before the sprite is updated.
+            // spriteRef.tileIndex = currentAnim.vals[0];
+        }
+    }
+
+    override function update (delta:Float) {
         animTime++;
 
         final frameAnimTime = Math.floor(animTime / currentAnim.frameTime);

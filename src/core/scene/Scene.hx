@@ -1,5 +1,7 @@
 package core.scene;
 
+import core.components.Family;
+import core.components.FrameAnim;
 import core.gameobjects.GameObject;
 import core.gameobjects.Sprite;
 import core.system.Camera;
@@ -45,6 +47,14 @@ class Scene /* implements Destroyable */ {
         final sprite = new Sprite(x, y, image, sizeX, sizeY);
         entities.push(sprite);
         return sprite;
+    }
+
+    public inline function makeAnim (num:Int):Family<FrameAnim> {
+        final f = new Family<FrameAnim>();
+        for (i in 0...num) {
+            f.items.push(new FrameAnim());
+        }
+        return f;
     }
 
     public function destroy () {

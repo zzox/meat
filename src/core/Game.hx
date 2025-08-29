@@ -1,5 +1,7 @@
 package core;
 
+import core.components.Family;
+import core.components.FrameAnim;
 import core.gameobjects.Sprite;
 import core.scene.PreloadScene;
 import core.scene.Scene;
@@ -13,21 +15,33 @@ import kha.System;
 import kha.Worker;
 import kha.graphics2.Graphics;
 
-class SprItem extends Sprite {
-    override function render (g2:Graphics, cam:Camera) {
-        g2.drawImage(image, x, y);
-    }
-}
+// class SprItem extends Sprite {
+//     override function render (g2:Graphics, cam:Camera) {
+//         g2.drawImage(image, x, y);
+//     }
+// }
 
 class TestScene extends Scene {
+    var anim:Family<FrameAnim> = new Family<FrameAnim>();
+
     override function create () {
         super.create();
 
         trace('test');
 
-        final spr = new SprItem(20, 20, Assets.images.cat);
+        anim = makeAnim(1);
 
+        final spr = new Sprite(20, 20, Assets.images.actors, 32, 32);
+        // spr.addComponent(animFam.getNext());
+        spr.init(anim.getNext());
+        spr.anim.add('run', [1, 1, 2, 0], 15);
+        spr.anim.play('run');
         entities.push(spr);
+    }
+
+    override function update (delta:Float) {
+        super.update(delta);
+        anim.update(delta);
     }
 }
 
@@ -111,8 +125,11 @@ class Game {
         final delta = UPDATE_TIME;
 #end
 
+        scenes = scenes.filter((s) -> !s.destroyed);
+
         for (s in newScenes) scenes.push(s);
         newScenes.resize(0);
+
         for (s in scenes) {
             // if (!s.isPaused) {
                 s.update(delta);
@@ -124,7 +141,6 @@ class Game {
                 s.camera.height = height;
             }
         }
-        scenes = scenes.filter((s) -> !s.destroyed);
 
         currentTime = now;
     }

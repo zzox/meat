@@ -1,5 +1,6 @@
 package core.gameobjects;
 
+import core.components.FrameAnim;
 import core.system.Camera;
 import kha.Image;
 import kha.graphics2.Graphics;
@@ -13,12 +14,24 @@ class Sprite extends GameObject {
 
     public var image:Image;
 
+    public var anim:FrameAnim;
+
+    var animIndex:Int = -1;
+
     public function new (x:Float = 0.0, y:Float = 0.0, image:Image, ?sizeX:Int, ?sizeY:Int) {
         this.x = x;
         this.y = y;
-        this.sizeX = sizeX ?? image.height;
-        this.sizeY = sizeY ?? image.width;
+        this.sizeX = sizeX ?? image.width;
+        this.sizeY = sizeY ?? image.height;
         this.image = image;
+    }
+
+    public function init (?anim:FrameAnim/*, ?physics:FrameAnim*/) {
+        this.anim = anim;
+
+        if (anim != null) {
+            anim.sprite = this;
+        }
     }
 
     override function update (delta:Float) {}

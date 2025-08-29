@@ -1,5 +1,6 @@
 package core.gameobjects;
 
+import core.components.Component;
 import core.system.Camera;
 import kha.graphics2.Graphics;
 
@@ -15,6 +16,8 @@ class GameObject {
     public var sizeY:Int;
     public var scrollFactorX:Float = 1.0;
     public var scrollFactorY:Float = 1.0;
+
+    public var components:Array<Component> = [];
 
     public function start () {
         active = true;
