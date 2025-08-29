@@ -5,160 +5,12 @@ import kha.Framebuffer;
 import kha.Image;
 import kha.Scheduler;
 import kha.System;
+import kha.Worker;
 import kha.graphics2.Graphics;
-
-interface IDestroyable {
-    public var destroyed:Bool;
-    public var x:Float;
-    public var y:Float;
-}
-
-interface IUpdateable extends IDestroyable {
-    public var active:Bool;
-    public function update (time:Float):Void;
-}
-
-interface IRenderable extends IDestroyable {
-    public var visible:Bool;
-    public function render (g2:Graphics, cam:Camera):Void;
-}
-
-class IntVec2 {
-    public static inline function make (x:Int, y:Int) {
-        // TODO: pooling
-        return new IntVec2(x, y);
-    }
-
-    public var x:Int;
-    public var y:Int;
-
-    public function new (x:Int, y:Int) {
-        set(x, y);
-    }
-
-    public function set (x:Int, y: Int) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
-// is this necessary?
-interface GameObject extends IUpdateable extends IRenderable {
-    public var sizeX:Int;
-    public var sizeY:Int;
-}
-
-// a selection of an image. not rotatable or scalable (presently)
-class Sprite implements GameObject {
-    public var destroyed:Bool = false;
-
-    public var active:Bool = true;
-    public var visible:Bool = true;
-
-    public var x:Float;
-    public var y:Float;
-    public var sizeX:Int;
-    public var sizeY:Int;
-    public var tileIndex:Int = 0;
-    var flipX:Bool = false;
-    var flipY:Bool = false;
-
-    public var image:Image;
-
-    public function new (x:Float = 0.0, y:Float = 0.0, image:Image, ?sizeX:Int, ?sizeY:Int) {
-        this.x = x;
-        this.y = y;
-        this.sizeX = sizeX ?? image.height;
-        this.sizeY = sizeY ?? image.width;
-        this.image = image;
-    }
-
-    public function update (delta:Float) {}
-
-    public function render (g2:Graphics, camera:Camera) {
-        // TODO: null check image? we need one, correct?
-        // load placeholder? use asset filter in the beginning?
-
-        // g2.color = Math.floor(alpha * 256) * 0x1000000 + color;
-
-        // rotate, translate, then scale
-        // g2.pushRotation(toRadians(angle), getMidpoint().x, getMidpoint().y);
-        // g2.pushTranslation(-camera.scroll.x * scrollFactor.x, -camera.scroll.y * scrollFactor.y);
-        // g2.pushScale(camera.scale.x, camera.scale.y);
-
-        // draw a cutout of the spritesheet based on the tileindex
-        final cols = Std.int(image.width / sizeX);
-        // TODO: clamp all to int besides camera position
-        // g2.drawScaledSubImage(
-        //     image,
-        //     (tileIndex % cols) * size.x,
-        //     Math.floor(tileIndex / cols) * size.y,
-        //     size.x,
-        //     size.y,
-        //     x + ((size.x - size.x * scale.x) / 2) + (flipX ? size.x * scale.x : 0),
-        //     y + ((size.y - size.y * scale.y) / 2) + (flipY ? size.y * scale.y : 0),
-        //     size.x * scale.x * (flipX ? -1 : 1),
-        //     size.y * scale.y * (flipY ? -1 : 1)
-        // );
-        g2.drawSubImage(
-            image,
-            x + (flipX ? sizeX : 0),
-            y + (flipY ? sizeY : 0),
-            (tileIndex % cols) * sizeX,
-            Math.floor(tileIndex / cols) * sizeY,
-            sizeX,
-            sizeY
-        );
-
-        // g2.popTransformation();
-        // g2.popTransformation();
-        // g2.popTransformation();
-    }
-}
 
 class SprItem extends Sprite {
     override function render (g2:Graphics, cam:Camera) {
         g2.drawImage(image, x, y);
-    }
-}
-
-class Camera {
-    public var bgColor:Int = 0xff000000;
-    public function new () {}
-}
-
-class Scene {
-    // convenience helper, not always
-    public var entities:Array<GameObject> = [];
-
-    public var camera:Camera;
-
-    public function new () {}
-
-    public function create () {
-        camera = new Camera();
-    }
-
-    public function update (time:Float) {
-        for (s in entities) { s.update(time); }
-    }
-
-    // called when drawing, passes in graphics instance
-    // overriding render will require you to call begin, clear and end
-    // public function render (graphics:Graphics, g4:kha.graphics4.Graphics, clears:Bool) {
-    public function render (graphics:Graphics, clears:Bool) {
-        graphics.begin(clears, camera.bgColor);
-
-        for (sprite in entities) {
-            sprite.render(graphics, camera);
-        }
-
-// #if debug_physics
-//         for (sprite in entities) {
-//             sprite.renderDebug(graphics, camera);
-//         }
-// #end
-        graphics.end();
     }
 }
 
@@ -189,6 +41,8 @@ class Game {
     public var width:Int;
     public var height:Int;
 
+    var scaleMode:ScaleMode;
+
     // Size of the buffer.
     public var bufferWidth:Int;
     public var bufferHeight:Int;
@@ -196,10 +50,12 @@ class Game {
     // The backbuffer being drawn on to be scaled.  Not used in scaleMode `Fit`.
     var backbuffer:Image;
 
+    // array of scenes about to become scenes
+    var newScenes:Array<Scene> = [];
     // array of scenes to update and render
     var scenes:Array<Scene> = [];
 
-    public function new (name:String, width:Int, height:Int, scaleMode:ScaleMode, ?bufferWidth:Int, ?bufferHeight:Int) {
+    public function new (name:String, width:Int, height:Int, scaleMode:ScaleMode, initialScene:Scene, ?bufferWidth:Int, ?bufferHeight:Int) {
         // size = IntVec2.make(width, height)
         this.width = width;
         this.height = height;
@@ -215,22 +71,27 @@ class Game {
                 this.bufferWidth = bufferWidth;
                 this.bufferHeight = bufferHeight;
             } else {
-                bufferWidth = -1;
-                bufferHeight = -1;
-            }
-
-            Scheduler.addTimeTask(update, 0, UPDATE_TIME);
-
-            if (scaleMode == PixelPerfect) {
-                System.notifyOnFrames((frames) -> { renderPixelPerfect(frames[0]); });
-            } else {
-                System.notifyOnFrames((frames) -> { render(frames[0]); });
+                this.bufferWidth = -1;
+                this.bufferHeight = -1;
             }
 
             Assets.loadEverything(() -> {
-                final scene = new TestScene();
-                scene.create();
-                scenes.push(scene);
+                Scheduler.addTimeTask(update, 0, UPDATE_TIME);
+
+                if (scaleMode == PixelPerfect) {
+                    System.notifyOnFrames((frames) -> { renderPixelPerfect(frames[0]); });
+                } else {
+                    System.notifyOnFrames((frames) -> { render(frames[0]); });
+                }
+
+                addScene(new PreloadScene());
+
+                Assets.loadEverything(() -> {
+                    changeScene(initialScene);
+                });
+            }, (item) -> {
+                if (item.name == 'made_with_kha') return true;
+                return false;
             });
         });
     }
@@ -244,9 +105,20 @@ class Game {
         final delta = UPDATE_TIME;
 #end
 
+        for (s in newScenes) scenes.push(s);
+        newScenes.resize(0);
         for (s in scenes) {
-            s.update(delta);
+            // if (!s.isPaused) {
+                s.update(delta);
+            // }
+
+            // resize the camera if we use the `Full` scale mode.
+            if (scaleMode == Full) {
+                s.camera.width = width;
+                s.camera.height = height;
+            }
         }
+        scenes = scenes.filter((s) -> !s.destroyed);
 
         currentTime = now;
     }
@@ -315,6 +187,29 @@ class Game {
             // framebuffer.g2.pipeline = fullScreenPipeline;
             ScalerExp.scalePixelPerfect(backbuffer, framebuffer);
         framebuffer.g2.end();
+    }
+
+    public function changeScene (scene:Scene, ?callback:Void -> Void) {
+        for (s in scenes) s.destroy();
+        // scenes = [];
+
+        addScene(scene);
+
+        if (callback != null) {
+            callback();
+        }
+    }
+
+    public function removeScene (scene:Scene) {
+        scene.destroy();
+    }
+
+    public function addScene (scene:Scene) {
+        newScenes.push(scene);
+        // scene.game = this;
+        scene.camera = new Camera(bufferWidth > -1 ? bufferWidth : width, bufferHeight > -1 ? bufferHeight : height);
+        trace(scene.camera.height, scene.camera.width);
+        scene.create();
     }
 
     inline function setSize (x:Int, y:Int) {

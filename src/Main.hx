@@ -18,6 +18,7 @@ class Main {
             'meat',
             1280, 720,
             Full,
+            new TestScene(),
             320, 180
         );
 
