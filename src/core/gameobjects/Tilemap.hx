@@ -34,7 +34,7 @@ class Tilemap extends GameObject {
 
     override function render (g2:Graphics, camera:Camera) {
         g2.pushTranslation(-camera.scrollX * scrollFactorX, -camera.scrollY * scrollFactorY);
-        g2.drawImage(image, x, y);
+        g2.drawImage(image, Math.floor(x), Math.floor(y));
         g2.popTransformation();
     }
 }

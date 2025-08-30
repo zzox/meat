@@ -1,8 +1,7 @@
 package core.system;
 
-// TODO: a system is a thing that can be updated. Cameras, timers, tweens, input types.
-// maybe even groups of entities
-
+// A system is a thing or group of things that can be updated.
+// Cameras, timers, tweens, input types.
 class System {
     public function new () {}
     public function update (delta:Float) {}

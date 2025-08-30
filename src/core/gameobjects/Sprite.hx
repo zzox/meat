@@ -37,7 +37,6 @@ class Sprite extends GameObject {
     override function update (delta:Float) {}
 
     override function render (g2:Graphics, camera:Camera) {
-        // TODO: null check image? we need one, correct?
         // load placeholder? use asset filter in the beginning?
 
         // g2.color = Math.floor(alpha * 256) * 0x1000000 + color;
@@ -62,15 +61,14 @@ class Sprite extends GameObject {
         //     size.x * scale.x * (flipX ? -1 : 1),
         //     size.y * scale.y * (flipY ? -1 : 1)
         // );
-        // TODO: clamp all to int besides camera position
         g2.drawScaledSubImage(
             image,
             (tileIndex % cols) * sizeX,
             Math.floor(tileIndex / cols) * sizeY,
             sizeX,
             sizeY,
-            x + (flipX ? sizeX : 0),
-            y + (flipY ? sizeY : 0),
+            Math.floor(x + (flipX ? sizeX : 0)),
+            Math.floor(y + (flipY ? sizeY : 0)),
             sizeX * (flipX ? -1 : 1),
             sizeY * (flipY ? -1 : 1)
         );
