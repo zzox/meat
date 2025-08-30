@@ -1,6 +1,8 @@
 package core.system;
 
+import core.Const;
 import core.gameobjects.GameObject;
+import core.util.Util;
 
 class Camera extends System {
     public var bgColor:Int = 0xff000000;
@@ -13,11 +15,10 @@ class Camera extends System {
     public var followX:Null<GameObject>;
     public var followY:Null<GameObject>;
 
-    public var boundsOn:Bool = false;
-    public var boundsMinX:Null<Int>;
-    public var boundsMinY:Null<Int>;
-    public var boundsMaxX:Null<Int>;
-    public var boundsMaxY:Null<Int>;
+    public var boundsMinX:Int = -Const.RBN;
+    public var boundsMinY:Int = -Const.RBN;
+    public var boundsMaxX:Int = Const.RBN;
+    public var boundsMaxY:Int = Const.RBN;
 
     public var offsetX:Int;
     public var offsetY:Int;
@@ -36,6 +37,11 @@ class Camera extends System {
         if (followY != null) {
             scrollY = Math.floor(followY.getMiddleY() - height / 2);
         }
+
+        final prescrollx = scrollX;
+        scrollX = clamp(scrollX, boundsMinX, boundsMaxX - width);
+        scrollY = clamp(scrollY, boundsMinY, boundsMaxY - height);
+        trace(prescrollx, scrollX);
     }
 
     public function startFollow (sprite:GameObject, offsetX:Int = 0, offsetY:Int = 0) {
@@ -54,8 +60,6 @@ class Camera extends System {
     }
 
     public function setBounds (minX:Int, minY:Int, maxX:Int, maxY:Int) {
-        boundsOn = true;
-
         boundsMinX = minX;
         boundsMinY = minY;
         boundsMaxX = maxX;

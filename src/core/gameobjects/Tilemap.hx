@@ -16,9 +16,9 @@ class Tilemap extends GameObject {
                 image.g2.drawSubImage(
                     tileImage,
                     Math.floor(i % width) * tileWidth,
-                    Math.floor(i / height) * tileHeight,
-                    Math.floor(tiles[i] % tileImage.width * tileWidth),
-                    Math.floor(tiles[i] / tileImage.height * tileHeight),
+                    Math.floor(i / width) * tileHeight,
+                    Math.floor(tiles[i] * tileWidth % tileImage.width),
+                    Math.floor(tiles[i] * tileHeight / tileImage.height),
                     tileWidth,
                     tileHeight
                 );

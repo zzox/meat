@@ -17,12 +17,6 @@ import kha.System;
 import kha.input.KeyCode;
 import kha.input.Keyboard;
 
-// class SprItem extends Sprite {
-//     override function render (g2:Graphics, cam:Camera) {
-//         g2.drawImage(image, x, y);
-//     }
-// }
-
 class TestScene extends Scene {
     var player:Sprite;
 
@@ -34,7 +28,7 @@ class TestScene extends Scene {
         trace('test');
 
         final arr = [];
-        for (i in 0...576) {
+        for (i in 0...300) {
             if (Math.random() < 0.05) {
                 arr.push(1);
             } else if (Math.random() < 0.3) {
@@ -44,7 +38,7 @@ class TestScene extends Scene {
             }
         }
 
-        final tilemap = new Tilemap(2, 2, Assets.images.tiles, 24, 24, 16, 12, arr);
+        final tilemap = new Tilemap(0, 0, Assets.images.tiles, 20, 15, 16, 12, arr);
         entities.push(tilemap);
 
         anim = makeAnim(1);
@@ -57,22 +51,23 @@ class TestScene extends Scene {
         entities.push(player);
 
         camera.startFollow(player);
+        camera.setBounds(0, 0, 20 * 16, 15 * 12);
     }
 
     override function update (delta:Float) {
         var x = player.x;
         var y = player.y;
         if (Game.keys.pressed(KeyCode.Left)) {
-            player.x -= 1.0;
+            player.x -= 1.5;
         }
         if (Game.keys.pressed(KeyCode.Right)) {
-            player.x += 1.0;
+            player.x += 1.5;
         }
         if (Game.keys.pressed(KeyCode.Up)) {
-            player.y -= 0.66;
+            player.y -= 1.0;
         }
         if (Game.keys.pressed(KeyCode.Down)) {
-            player.y += 0.66;
+            player.y += 1.0;
         }
 
         if (player.x > x) {
