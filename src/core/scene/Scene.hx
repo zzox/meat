@@ -23,6 +23,8 @@ class Scene /* implements Destroyable */ {
         for (e in entities) {
             if (e.active) e.update(delta);
         }
+
+        camera.update(delta);
     }
 
     // called when drawing, passes in graphics instance

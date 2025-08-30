@@ -36,4 +36,7 @@ class GameObject {
     public function render (g2:Graphics, camera:Camera) {
         throw 'GameObject::render not implemented';
     }
+
+    public function getMiddleX () return x + sizeX / 2;
+    public function getMiddleY () return y + sizeY / 2;
 }

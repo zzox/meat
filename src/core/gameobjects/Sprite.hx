@@ -47,9 +47,10 @@ class Sprite extends GameObject {
         // g2.pushTranslation(-camera.scroll.x * scrollFactor.x, -camera.scroll.y * scrollFactor.y);
         // g2.pushScale(camera.scale.x, camera.scale.y);
 
+        g2.pushTranslation(-camera.scrollX * scrollFactorX, -camera.scrollY * scrollFactorY);
+
         // draw a cutout of the spritesheet based on the tileindex
         final cols = Std.int(image.width / sizeX);
-        // TODO: clamp all to int besides camera position
         // g2.drawScaledSubImage(
         //     image,
         //     (tileIndex % cols) * size.x,
@@ -61,6 +62,7 @@ class Sprite extends GameObject {
         //     size.x * scale.x * (flipX ? -1 : 1),
         //     size.y * scale.y * (flipY ? -1 : 1)
         // );
+        // TODO: clamp all to int besides camera position
         g2.drawScaledSubImage(
             image,
             (tileIndex % cols) * sizeX,
@@ -74,7 +76,7 @@ class Sprite extends GameObject {
         );
 
         // g2.popTransformation();
-        // g2.popTransformation();
+        g2.popTransformation();
         // g2.popTransformation();
     }
 }

@@ -32,7 +32,9 @@ class Tilemap extends GameObject {
 
     override function update (delta:Float) {}
 
-    override function render (g2:Graphics, cam:Camera) {
+    override function render (g2:Graphics, camera:Camera) {
+        g2.pushTranslation(-camera.scrollX * scrollFactorX, -camera.scrollY * scrollFactorY);
         g2.drawImage(image, x, y);
+        g2.popTransformation();
     }
 }

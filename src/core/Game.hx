@@ -55,6 +55,8 @@ class TestScene extends Scene {
         player.anim.add('run', [1, 1, 2, 0], 5);
         player.anim.play('stand');
         entities.push(player);
+
+        camera.startFollow(player);
     }
 
     override function update (delta:Float) {
@@ -67,10 +69,10 @@ class TestScene extends Scene {
             player.x += 1.0;
         }
         if (Game.keys.pressed(KeyCode.Up)) {
-            player.y -= 0.5;
+            player.y -= 0.66;
         }
         if (Game.keys.pressed(KeyCode.Down)) {
-            player.y += 0.5;
+            player.y += 0.66;
         }
 
         if (player.x > x) {
