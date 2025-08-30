@@ -7,14 +7,15 @@ import core.gameobjects.Tilemap;
 import core.scene.PreloadScene;
 import core.scene.Scene;
 import core.system.Camera;
+import core.system.KeysInput;
 import core.util.ScalerExp;
 import kha.Assets;
 import kha.Framebuffer;
 import kha.Image;
 import kha.Scheduler;
 import kha.System;
-import kha.Worker;
-import kha.graphics2.Graphics;
+import kha.input.KeyCode;
+import kha.input.Keyboard;
 
 // class SprItem extends Sprite {
 //     override function render (g2:Graphics, cam:Camera) {
@@ -23,6 +24,8 @@ import kha.graphics2.Graphics;
 // }
 
 class TestScene extends Scene {
+    var player:Sprite;
+
     var anim:Family<FrameAnim> = new Family<FrameAnim>();
 
     override function create () {
@@ -45,15 +48,38 @@ class TestScene extends Scene {
         entities.push(tilemap);
 
         anim = makeAnim(1);
-        final spr = new Sprite(20, 20, Assets.images.actors, 32, 32);
+        player = new Sprite(20, 20, Assets.images.actors, 32, 32);
         // spr.addComponent(animFam.getNext());
-        spr.init(anim.getNext());
-        spr.anim.add('run', [1, 1, 2, 0], 15);
-        spr.anim.play('run');
-        entities.push(spr);
+        player.init(anim.getNext());
+        player.anim.add('stand', [0]);
+        player.anim.add('run', [1, 1, 2, 0], 5);
+        player.anim.play('stand');
+        entities.push(player);
     }
 
     override function update (delta:Float) {
+        var x = player.x;
+        var y = player.y;
+        if (Game.keys.pressed(KeyCode.Left)) {
+            player.x -= 1.0;
+        }
+        if (Game.keys.pressed(KeyCode.Right)) {
+            player.x += 1.0;
+        }
+        if (Game.keys.pressed(KeyCode.Up)) {
+            player.y -= 0.5;
+        }
+        if (Game.keys.pressed(KeyCode.Down)) {
+            player.y += 0.5;
+        }
+
+        if (player.x > x) {
+            player.flipX = true;
+        } else {
+            player.flipX = false;
+        }
+        player.anim.play(player.x != x || player.y != y ? 'run' : 'stand');
+
         super.update(delta);
         anim.update(delta);
     }
@@ -88,6 +114,9 @@ class Game {
     // array of scenes to update and render
     var scenes:Array<Scene> = [];
 
+    // Keyboard input controller.
+    public static var keys:KeysInput = new KeysInput();
+
     public function new (name:String, width:Int, height:Int, scaleMode:ScaleMode, initialScene:Scene, ?bufferWidth:Int, ?bufferHeight:Int) {
         // size = IntVec2.make(width, height)
         this.width = width;
@@ -106,6 +135,10 @@ class Game {
             } else {
                 this.bufferWidth = -1;
                 this.bufferHeight = -1;
+            }
+
+            if (Keyboard.get() != null) {
+                Keyboard.get().notify(keys.pressButton, keys.releaseButton);
             }
 
             Assets.loadEverything(() -> {
@@ -155,6 +188,9 @@ class Game {
                 s.camera.height = height;
             }
         }
+
+        // after the scenes to clear `justPressed`
+        keys.update(UPDATE_TIME);
 
         currentTime = now;
     }

@@ -17,7 +17,7 @@ class FrameAnim extends Component {
     var animTime:Float;
     var currentAnim:AnimItem;
 
-    public function add (name:String, vals:Array<Int>, frameTime:Int, repeats:Bool = true) {
+    public function add (name:String, vals:Array<Int>, frameTime:Int = 1, repeats:Bool = true) {
         _animations[name] = {
             name: name,
             vals: vals,

@@ -1,7 +1,5 @@
 package core;
 
-import kha.graphics2.Graphics;
-
 class IntVec2 {
     public static inline function make (x:Int, y:Int) {
         // TODO: pooling

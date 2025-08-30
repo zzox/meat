@@ -9,8 +9,8 @@ import kha.graphics2.Graphics;
 class Sprite extends GameObject {
 
     public var tileIndex:Int = 0;
-    var flipX:Bool = false;
-    var flipY:Bool = false;
+    public var flipX:Bool = false;
+    public var flipY:Bool = false;
 
     public var image:Image;
 
@@ -61,14 +61,16 @@ class Sprite extends GameObject {
         //     size.x * scale.x * (flipX ? -1 : 1),
         //     size.y * scale.y * (flipY ? -1 : 1)
         // );
-        g2.drawSubImage(
+        g2.drawScaledSubImage(
             image,
-            x + (flipX ? sizeX : 0),
-            y + (flipY ? sizeY : 0),
             (tileIndex % cols) * sizeX,
             Math.floor(tileIndex / cols) * sizeY,
             sizeX,
-            sizeY
+            sizeY,
+            x + (flipX ? sizeX : 0),
+            y + (flipY ? sizeY : 0),
+            sizeX * (flipX ? -1 : 1),
+            sizeY * (flipY ? -1 : 1)
         );
 
         // g2.popTransformation();
