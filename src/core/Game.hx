@@ -103,7 +103,6 @@ class Game {
 
     // The backbuffer being drawn on to be scaled.  Not used in scaleMode `Fit`.
     var backbuffer:Image;
-    var scaleBuffer:Image;
 
     // array of scenes about to become scenes
     var newScenes:Array<Scene> = [];
@@ -128,7 +127,6 @@ class Game {
                 // backbuffer.g2.imageScaleQuality = Low;
                 this.bufferWidth = bufferWidth;
                 this.bufferHeight = bufferHeight;
-                scaleBuffer = Image.createRenderTarget(width + 8, height + 8);
             } else {
                 this.bufferWidth = -1;
                 this.bufferHeight = -1;
@@ -252,13 +250,9 @@ class Game {
             scenes[s].render(backbuffer.g2, s == 0);
         }
 
-        scaleBuffer.g2.begin(true, 0xff000000);
-            ScalerExp.scalePixelPerfect(backbuffer, scaleBuffer);
-        scaleBuffer.g2.end();
-
         framebuffer.g2.begin(true, 0xff000000);
             // framebuffer.g2.pipeline = fullScreenPipeline;
-            framebuffer.g2.drawImage(scaleBuffer, scenes[0].camera.scrollXDiff * -4, scenes[0].camera.scrollYDiff * -4);
+            ScalerExp.scalePixelPerfect(backbuffer, framebuffer);
         framebuffer.g2.end();
     }
 

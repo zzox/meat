@@ -28,9 +28,6 @@ class Camera extends System {
     public var lerpX:Float = 1.0;
     public var lerpY:Float = 1.0;
 
-    public var scrollXDiff:Float = 0.0;
-    public var scrollYDiff:Float = 0.0;
-
     public function new (width:Int, height:Int) {
         super();
         this.width = width;
@@ -40,13 +37,11 @@ class Camera extends System {
     override function update (delta:Float) {
         if (followX != null) {
             scrollX = lerp(followX.getMiddleX() - width / 2, scrollX, lerpX);
-            scrollXDiff = scrollX - Math.round(scrollX);
             // scrollX = Math.floor(scrollX);
         }
 
         if (followY != null) {
             scrollY = lerp(followY.getMiddleY() - height / 2, scrollY, lerpY);
-            scrollYDiff = scrollY - Math.round(scrollY);
             // scrollY = Math.floor(scrollY);
         }
 
