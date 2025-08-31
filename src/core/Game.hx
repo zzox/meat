@@ -56,16 +56,16 @@ class TestScene extends Scene {
         var x = player.x;
         var y = player.y;
         if (Game.keys.pressed(KeyCode.Left)) {
-            player.x -= 1.0;
+            player.x -= 1.333333333;
         }
         if (Game.keys.pressed(KeyCode.Right)) {
-            player.x += 1.0;
+            player.x += 1.333333333;
         }
         if (Game.keys.pressed(KeyCode.Up)) {
-            player.y -= 0.75;
+            player.y -= 1.0;
         }
         if (Game.keys.pressed(KeyCode.Down)) {
-            player.y += 0.75;
+            player.y += 1.0;
         }
 
         if (player.x > x) {
