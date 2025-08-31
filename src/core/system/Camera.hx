@@ -4,6 +4,8 @@ import core.Const;
 import core.gameobjects.GameObject;
 import core.util.Util;
 
+// NOTE: pixel-locked camera. scrollXDiff and scrollYDiff are properties to help
+// deal with jitter issues
 class Camera extends System {
     public var bgColor:Int = 0xff000000;
 
@@ -23,6 +25,12 @@ class Camera extends System {
     public var offsetX:Int;
     public var offsetY:Int;
 
+    public var lerpX:Float = 1.0;
+    public var lerpY:Float = 1.0;
+
+    public var scrollXDiff:Float = 0.0;
+    public var scrollYDiff:Float = 0.0;
+
     public function new (width:Int, height:Int) {
         super();
         this.width = width;
@@ -31,27 +39,30 @@ class Camera extends System {
 
     override function update (delta:Float) {
         if (followX != null) {
-            scrollX = Math.floor(followX.getMiddleX() - width / 2);
+            scrollX = lerp(followX.getMiddleX() - width / 2, scrollX, lerpX);
+            scrollXDiff = scrollX - Math.round(scrollX);
+            // scrollX = Math.floor(scrollX);
         }
 
         if (followY != null) {
-            scrollY = Math.floor(followY.getMiddleY() - height / 2);
+            scrollY = lerp(followY.getMiddleY() - height / 2, scrollY, lerpY);
+            scrollYDiff = scrollY - Math.round(scrollY);
+            // scrollY = Math.floor(scrollY);
         }
 
-        final prescrollx = scrollX;
         scrollX = clamp(scrollX, boundsMinX, boundsMaxX - width);
         scrollY = clamp(scrollY, boundsMinY, boundsMaxY - height);
-        trace(prescrollx, scrollX);
     }
 
-    public function startFollow (sprite:GameObject, offsetX:Int = 0, offsetY:Int = 0) {
+    public function startFollow (sprite:GameObject, offsetX:Int = 0, offsetY:Int = 0, lerpX:Float = 0, lerpY:Float = 0) {
         followX = sprite;
         followY = sprite;
 
         this.offsetX = offsetX;
         this.offsetY = offsetY;
 
-        // TODO: lerp
+        this.lerpX = lerpX;
+        this.lerpY = lerpY;
     }
 
     public function stopFollow () {

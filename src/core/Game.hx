@@ -25,8 +25,6 @@ class TestScene extends Scene {
     override function create () {
         super.create();
 
-        trace('test');
-
         final arr = [];
         for (i in 0...300) {
             if (Math.random() < 0.05) {
@@ -50,24 +48,24 @@ class TestScene extends Scene {
         player.anim.play('stand');
         entities.push(player);
 
-        camera.startFollow(player);
-        camera.setBounds(0, 0, 20 * 16, 15 * 12);
+        camera.startFollow(player, 0, 0, 0.1, 0.1);
+        // camera.setBounds(0, 0, 20 * 16, 15 * 12);
     }
 
     override function update (delta:Float) {
         var x = player.x;
         var y = player.y;
         if (Game.keys.pressed(KeyCode.Left)) {
-            player.x -= 1.5;
+            player.x -= 1.0;
         }
         if (Game.keys.pressed(KeyCode.Right)) {
-            player.x += 1.5;
+            player.x += 1.0;
         }
         if (Game.keys.pressed(KeyCode.Up)) {
-            player.y -= 1.0;
+            player.y -= 0.75;
         }
         if (Game.keys.pressed(KeyCode.Down)) {
-            player.y += 1.0;
+            player.y += 0.75;
         }
 
         if (player.x > x) {
@@ -105,6 +103,7 @@ class Game {
 
     // The backbuffer being drawn on to be scaled.  Not used in scaleMode `Fit`.
     var backbuffer:Image;
+    var scaleBuffer:Image;
 
     // array of scenes about to become scenes
     var newScenes:Array<Scene> = [];
@@ -129,6 +128,7 @@ class Game {
                 // backbuffer.g2.imageScaleQuality = Low;
                 this.bufferWidth = bufferWidth;
                 this.bufferHeight = bufferHeight;
+                scaleBuffer = Image.createRenderTarget(width + 8, height + 8);
             } else {
                 this.bufferWidth = -1;
                 this.bufferHeight = -1;
@@ -252,9 +252,13 @@ class Game {
             scenes[s].render(backbuffer.g2, s == 0);
         }
 
+        scaleBuffer.g2.begin(true, 0xff000000);
+            ScalerExp.scalePixelPerfect(backbuffer, scaleBuffer);
+        scaleBuffer.g2.end();
+
         framebuffer.g2.begin(true, 0xff000000);
             // framebuffer.g2.pipeline = fullScreenPipeline;
-            ScalerExp.scalePixelPerfect(backbuffer, framebuffer);
+            framebuffer.g2.drawImage(scaleBuffer, scenes[0].camera.scrollXDiff * -4, scenes[0].camera.scrollYDiff * -4);
         framebuffer.g2.end();
     }
 
