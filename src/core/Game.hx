@@ -9,6 +9,7 @@ import core.scene.Scene;
 import core.system.Camera;
 import core.system.KeysInput;
 import core.util.ScalerExp;
+import core.util.TiledMap;
 import kha.Assets;
 import kha.Framebuffer;
 import kha.Image;
@@ -28,15 +29,18 @@ class TestScene extends Scene {
         final arr = [];
         for (i in 0...300) {
             if (Math.random() < 0.05) {
-                arr.push(1);
-            } else if (Math.random() < 0.3) {
-                arr.push(0);
-            } else {
                 arr.push(2);
+            } else if (Math.random() < 0.3) {
+                arr.push(1);
+            } else {
+                arr.push(3);
             }
         }
 
+        final tiled = new TiledMap(Assets.blobs.test1_tmx.toString());
+
         final tilemap = new Tilemap(0, 0, Assets.images.tiles, 20, 15, 16, 12, arr);
+        final tilemap = new Tilemap(0, 0, Assets.images.tiles, 20, 15, 16, 12, tiled.tileLayers.get('ground').data);
         entities.push(tilemap);
 
         anim = makeAnim(1);
@@ -70,7 +74,7 @@ class TestScene extends Scene {
 
         if (player.x > x) {
             player.flipX = true;
-        } else {
+        } else if (player.y < y) {
             player.flipX = false;
         }
         player.anim.play(player.x != x || player.y != y ? 'run' : 'stand');

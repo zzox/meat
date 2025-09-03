@@ -12,13 +12,14 @@ class Tilemap extends GameObject {
 
         image.g2.begin();
         for (i in 0...tiles.length) {
-            if (tiles[i] != null) {
+            final tileNum = tiles[i] - 1;
+            if (tileNum >= 0) {
                 image.g2.drawSubImage(
                     tileImage,
                     Math.floor(i % width) * tileWidth,
                     Math.floor(i / width) * tileHeight,
-                    Math.floor(tiles[i] * tileWidth % tileImage.width),
-                    Math.floor(tiles[i] * tileHeight / tileImage.height),
+                    Math.floor(tileNum * tileWidth % tileImage.width),
+                    Math.floor(tileNum * tileHeight / tileImage.height),
                     tileWidth,
                     tileHeight
                 );
