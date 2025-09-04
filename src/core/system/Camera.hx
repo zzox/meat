@@ -14,6 +14,9 @@ class Camera extends System {
     public var width:Int;
     public var height:Int;
 
+    // for now just one var, x and y can be created if necessary
+    public var scale:Float = 1.0;
+
     public var followX:Null<GameObject>;
     public var followY:Null<GameObject>;
 
