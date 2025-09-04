@@ -18,72 +18,6 @@ import kha.System;
 import kha.input.KeyCode;
 import kha.input.Keyboard;
 
-class TestScene extends Scene {
-    var player:Sprite;
-
-    var anim:Family<FrameAnim> = new Family<FrameAnim>();
-
-    override function create () {
-        super.create();
-
-        final arr = [];
-        for (i in 0...300) {
-            if (Math.random() < 0.05) {
-                arr.push(2);
-            } else if (Math.random() < 0.3) {
-                arr.push(1);
-            } else {
-                arr.push(3);
-            }
-        }
-
-        final tiled = new TiledMap(Assets.blobs.test1_tmx.toString());
-
-        final tilemap = new Tilemap(0, 0, Assets.images.tiles, 20, 15, 16, 12, arr);
-        final tilemap = new Tilemap(0, 0, Assets.images.tiles, 20, 15, 16, 12, tiled.tileLayers.get('ground').data);
-        entities.push(tilemap);
-
-        anim = makeAnim(1);
-        player = new Sprite(20, 20, Assets.images.actors, 32, 32);
-        // spr.addComponent(animFam.getNext());
-        player.init(anim.getNext());
-        player.anim.add('stand', [0]);
-        player.anim.add('run', [1, 1, 2, 0], 5);
-        player.anim.play('stand');
-        entities.push(player);
-
-        camera.startFollow(player, 0, 0, 0.1, 0.1);
-        // camera.setBounds(0, 0, 20 * 16, 15 * 12);
-    }
-
-    override function update (delta:Float) {
-        var x = player.x;
-        var y = player.y;
-        if (Game.keys.pressed(KeyCode.Left)) {
-            player.x -= 1.333333333;
-        }
-        if (Game.keys.pressed(KeyCode.Right)) {
-            player.x += 1.333333333;
-        }
-        if (Game.keys.pressed(KeyCode.Up)) {
-            player.y -= 1.0;
-        }
-        if (Game.keys.pressed(KeyCode.Down)) {
-            player.y += 1.0;
-        }
-
-        if (player.x > x) {
-            player.flipX = true;
-        } else if (player.y < y) {
-            player.flipX = false;
-        }
-        player.anim.play(player.x != x || player.y != y ? 'run' : 'stand');
-
-        super.update(delta);
-        anim.update(delta);
-    }
-}
-
 enum ScaleMode {
     Full;
     PixelPerfect;
@@ -151,6 +85,8 @@ class Game {
 
                 addScene(new PreloadScene());
 
+                // WARN: these can run out of order if there's nothing being loaded!
+                // (Game will get stuck on Preload screen)
                 Assets.loadEverything(() -> {
                     changeScene(initialScene);
                 });

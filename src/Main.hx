@@ -1,8 +1,5 @@
 import core.Game;
-
-// import core.Logs;
-// import core.Types;
-// import game.scenes.TestScene;
+import game.scenes.GameScene;
 
 #if kha_html5
 import js.Browser.document;
@@ -17,9 +14,8 @@ class Main {
         new Game(
             'meat',
             1280, 720,
-            PixelPerfect,
-            new TestScene(),
-            320, 180
+            Full,
+            new GameScene(),
         );
 
         // new Game(
