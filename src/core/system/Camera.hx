@@ -50,8 +50,8 @@ class Camera extends System {
             scrollY = Math.floor(scrollY);
         }
 
-        scrollX = clamp(scrollX, boundsMinX, boundsMaxX - width);
-        scrollY = clamp(scrollY, boundsMinY, boundsMaxY - height);
+        scrollX = clamp(scrollX - offsetX, boundsMinX, boundsMaxX - width);
+        scrollY = clamp(scrollY - offsetY, boundsMinY, boundsMaxY - height);
     }
 
     public function startFollow (sprite:GameObject, offsetX:Int = 0, offsetY:Int = 0, lerpX:Float = 1.0, lerpY:Float = 1.0) {
